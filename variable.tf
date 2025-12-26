@@ -7,11 +7,11 @@ variable "aws_region" {
 }
 
 variable "aws_access_key" {
-    type = string
+  type = string
 }
 
 variable "aws_secret_key" {
-    type = string
+  type = string
 }
 
 variable "project_name" {
@@ -21,8 +21,8 @@ variable "project_name" {
 }
 
 variable "ami" {
-    type = string
-    default = "ami-00d8fc944fb171e29"
+  type    = string
+  default = "ami-00d8fc944fb171e29"
 }
 
 variable "instance_type" {
