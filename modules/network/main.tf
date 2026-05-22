@@ -11,10 +11,10 @@ resource "aws_vpc" "sysdops_vpc"{
     }
 }
 
-resource "aws_subnet" "sysdops_public"{
+resource "aws_subnet" "sysdops_public_1"{
     vpc_id = aws_vpc.sysdops_vpc.id
-    cidr_block = var.public_subnet_cidr
-    availability_zone = var.availability_zone
+    cidr_block = var.public_subnet_1_cidr
+    availability_zone = var.availability_zone[0]
     map_public_ip_on_launch = true
 
     tags = {
@@ -23,10 +23,22 @@ resource "aws_subnet" "sysdops_public"{
     }
 }
 
-resource "aws_subnet" "sysdops_private"{
+resource "aws_subnet" "sysdops_public_2"{
     vpc_id = aws_vpc.sysdops_vpc.id
-    cidr_block = var.private_subbet_cidr
-    availability_zone = var.availability_zone
+    cidr_block = var.public_subnet_2_cidr
+    availability_zone = var.availability_zone[1]
+    map_public_ip_on_launch = true
+
+    tags = {
+        Name = "${var.environment}-public-subnet"
+        Environment = var.environment
+    }
+}
+
+resource "aws_subnet" "sysdops_private_1"{
+    vpc_id = aws_vpc.sysdops_vpc.id
+    cidr_block = var.private_subbet_1_cidr
+    availability_zone = var.availability_zone[0]
 
     tags = {
         Name = "${var.environment}-private-subnet"
@@ -55,8 +67,13 @@ resource "aws_route_table" "sysdops_route" {
   }
 }
 
-resource "aws_route_table_association" "sysdops_route_table_association" {
-  subnet_id      = aws_subnet.sysdops_public.id
+resource "aws_route_table_association" "sysdops_route_table_association_for_public_subnet_1" {
+  subnet_id      = aws_subnet.sysdops_public_1.id
+  route_table_id = aws_route_table.sysdops_route.id
+}
+
+resource "aws_route_table_association" "sysdops_route_table_association_for_public_subnet_2" {
+  subnet_id      = aws_subnet.sysdops_public_2.id
   route_table_id = aws_route_table.sysdops_route.id
 }
 
@@ -68,28 +85,96 @@ resource "aws_security_group" "sysdops_sg" {
     from_port        = 22
     to_port          = 22
     protocol         = "tcp"
-    cidr_blocks      = ["0.0.0.0/0"]
+    cidr_blocks      = [var.all_trafic]
   }
   ingress{
     from_port        = 80
     to_port          = 80
     protocol         = "tcp"
-    cidr_blocks      = ["0.0.0.0/0"]
+    cidr_blocks      = [var.all_trafic]
   }
   ingress{
     from_port        = 443
     to_port          = 443
     protocol         = "tcp"
-    cidr_blocks      = ["0.0.0.0/0"]
+    cidr_blocks      = [var.all_trafic]
   }
   egress {
     from_port        = 0
     to_port          = 0
     protocol         = "-1"
-    cidr_blocks      = ["0.0.0.0/0"]
+    cidr_blocks      = [var.all_trafic]
   }
 }
 
+
+resource "aws_network_acl" "sysdops_public_nacl" {
+  vpc_id = aws_vpc.sysdops_vpc.id
+
+  subnet_ids = [
+    aws_subnet.sysdops_public_1.id,
+    aws_subnet.sysdops_public_2.id
+  ]
+
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 100
+    action     = "allow"
+    cidr_block = var.all_trafic
+    from_port  = "80"
+    to_port    = "80"
+  }
+
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 200
+    action     = "allow"
+    cidr_block = var.all_trafic
+    from_port  = "22"
+    to_port    = "22"
+  }
+
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 300
+    action     = "allow"
+    cidr_block = var.all_trafic
+    from_port  = "443"
+    to_port    = "443"
+  }
+
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 400
+    action     = "allow"
+    cidr_block = var.all_trafic
+    from_port  = "5432"
+    to_port    = "5432"
+  }
+
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 500
+    action     = "allow"
+    cidr_block = var.all_trafic
+    from_port  = "8080"
+    to_port    = "8080"
+  }
+
+  egress {
+    protocol   = "tcp"
+    rule_no    = 100
+    action     = "allow"
+    cidr_block = var.all_trafic
+    from_port  = "1024"
+    to_port    = "65535"
+  }
+
+  
+  tags = {
+    Name = "sysdops_public_nacl"
+  }
+}
 
 
 
