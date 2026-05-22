@@ -22,11 +22,11 @@ variable "project_name" {
 
 variable "ami" {
   type    = string
-  default = "ami-00d8fc944fb171e29"
+  default = "ami-0da102818600fb88a"
 }
 
 variable "instance_type" {
   description = "EC2 instance type"
   type        = string
-  default     = "t2.medium"
+  default     = "t4g.nano"
 }

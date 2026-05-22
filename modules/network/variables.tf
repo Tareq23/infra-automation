@@ -17,20 +17,33 @@ variable "vpc_cird" {
   default     = "23.0.0.0/16"
 }
 
-variable "public_subnet_cidr" {
+variable "public_subnet_1_cidr" {
   description = "CIDR block for public subnet"
   type        = string
   default     = "23.0.1.0/24"
 }
 
-variable "private_subbet_cidr" {
-  description = "CIDR block for private subnet"
+variable "public_subnet_2_cidr" {
+  description = "CIDR block for public subnet"
   type        = string
   default     = "23.0.2.0/24"
 }
 
+variable "private_subbet_1_cidr" {
+  description = "CIDR block for private subnet"
+  type        = string
+  default     = "23.0.3.0/24"
+}
+
+variable "private_subbet_2_cidr" {
+  description = "CIDR block for private subnet"
+  type        = string
+  default     = "23.0.4.0/24"
+}
+
 variable "availability_zone" {
   description = "AWS availability zone"
-  type        = string
+  type        = list(string)
+  default     = ["ap-southeast-1a", "ap-southeast-1b"]
 }
 
