@@ -116,58 +116,123 @@ resource "aws_network_acl" "sysdops_public_nacl" {
     aws_subnet.sysdops_public_2.id
   ]
 
+  #############################################
+  # INBOUND RULES (traffic coming INTO subnet)
+  #############################################
+  
+  # Allow SSH inbound
   ingress {
     protocol   = "tcp"
     rule_no    = 100
     action     = "allow"
-    cidr_block = var.all_trafic
-    from_port  = "80"
-    to_port    = "80"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 22
+    to_port    = 22
   }
 
+  # Allow HTTP inbound
   ingress {
     protocol   = "tcp"
     rule_no    = 200
     action     = "allow"
-    cidr_block = var.all_trafic
-    from_port  = "22"
-    to_port    = "22"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 80
+    to_port    = 80
   }
 
+  # Allow HTTPS inbound
   ingress {
     protocol   = "tcp"
     rule_no    = 300
     action     = "allow"
-    cidr_block = var.all_trafic
-    from_port  = "443"
-    to_port    = "443"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 443
+    to_port    = 443
   }
 
+  # Allow PostgreSQL inbound
   ingress {
     protocol   = "tcp"
     rule_no    = 400
     action     = "allow"
-    cidr_block = var.all_trafic
-    from_port  = "5432"
-    to_port    = "5432"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 5432
+    to_port    = 5432
   }
 
+  # Allow port 8080 inbound
   ingress {
     protocol   = "tcp"
     rule_no    = 500
     action     = "allow"
-    cidr_block = var.all_trafic
-    from_port  = "8080"
-    to_port    = "8080"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 8080
+    to_port    = 8080
   }
 
+  # CRITICAL: Allow response traffic from internet (ephemeral ports)
+  # This allows responses from apt repositories, Docker Hub, etc.
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 600
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 1024
+    to_port    = 65535
+  }
+
+  # Allow DNS responses inbound (UDP)
+  ingress {
+    protocol   = "udp"
+    rule_no    = 700
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 53
+    to_port    = 53
+  }
+
+  #############################################
+  # OUTBOUND RULES (traffic going OUT of subnet)
+  #############################################
+
+  # Allow HTTP outbound (for apt updates)
   egress {
     protocol   = "tcp"
     rule_no    = 100
     action     = "allow"
-    cidr_block = var.all_trafic
-    from_port  = "1024"
-    to_port    = "65535"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 80
+    to_port    = 80
+  }
+
+  # Allow HTTPS outbound (for Docker, secure updates)
+  egress {
+    protocol   = "tcp"
+    rule_no    = 200
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 443
+    to_port    = 443
+  }
+
+  # Allow DNS queries outbound (UDP)
+  egress {
+    protocol   = "udp"
+    rule_no    = 300
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 53
+    to_port    = 53
+  }
+
+  # Allow outbound ephemeral ports (for outgoing connections)
+  egress {
+    protocol   = "tcp"
+    rule_no    = 400
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 1024
+    to_port    = 65535
   }
 
   
